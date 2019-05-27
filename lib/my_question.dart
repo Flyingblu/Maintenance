@@ -127,10 +127,3 @@ Future<List<Question>> getMyQuestion(String campus_id, String passwd) async {
     return _myQuestion(myQPage);
   }
 }
-
-
-main() {
-  getMyQuestion('cst1709364', 'Whw671217whw').then((qs) {
-    print(qs);
-  });
-}
