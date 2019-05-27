@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'my_questions.dart' as myQPage;
+import 'my_question_page.dart' as myQPage;
 
 void main() => runApp(MyApp());
 
