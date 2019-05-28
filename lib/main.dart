@@ -28,7 +28,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+      
   TabController controller;
 
   @override
@@ -46,7 +46,6 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Maintenance'),
         backgroundColor: Colors.deepOrange,
@@ -68,7 +67,7 @@ class _HomePageState extends State<HomePage>
       body: new TabBarView(
         controller: controller,
         children: <Widget>[
-          myQPage.MyQuestionsPage(_scaffoldKey),
+          myQPage.MyQuestionsPage(),
           Center(
             child: Text("Hello world again!"),
           ),

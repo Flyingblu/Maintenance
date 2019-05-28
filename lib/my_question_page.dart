@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'config.dart';
-import 'package:dio/dio.dart';
 import 'my_question.dart';
 
 class MyQuestionsPage extends StatefulWidget {
-  final GlobalKey<ScaffoldState> scaffoldKey;
 
-  MyQuestionsPage(this.scaffoldKey);
+  MyQuestionsPage();
 
   @override
   _MyQuestionsPageState createState() => _MyQuestionsPageState();
@@ -16,6 +14,7 @@ class _MyQuestionsPageState extends State<MyQuestionsPage> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
   List<Question> _questions;
+  var maintenance = Maintenance(campus_id, passwd);
 
   _showDetail(Question q, BuildContext context) {
     showModalBottomSheet(
@@ -57,6 +56,25 @@ class _MyQuestionsPageState extends State<MyQuestionsPage> {
         });
   }
 
+  _onRefresh(BuildContext context) {
+    var result = maintenance.getMyQuestion().then((data) {
+      setState(() {
+        _questions = data;
+      });
+    }, onError: (e) {
+      final snackBar = SnackBar(
+        content: Text(e.toString()),
+        duration: Duration(days: 1),
+        action: SnackBarAction(
+            label: 'Reload',
+            onPressed: () => WidgetsBinding.instance.addPostFrameCallback(
+                (_) => _refreshIndicatorKey.currentState.show())),
+      );
+      Scaffold.of(context).showSnackBar(snackBar);
+    });
+    return result;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -96,26 +114,6 @@ class _MyQuestionsPageState extends State<MyQuestionsPage> {
             children: cards,
           ),
         ),
-        onRefresh: () {
-          try {
-            return getMyQuestion(campus_id, passwd).then((data) {
-              print(data);
-              setState(() {
-                _questions = data;
-              });
-            });
-          } on DioError catch (e) {
-            final snackBar = SnackBar(
-              content: Text(e.toString()),
-              duration: Duration(days: 1),
-              action: SnackBarAction(
-                  label: 'Reload',
-                  onPressed: () => WidgetsBinding.instance.addPostFrameCallback(
-                      (_) => _refreshIndicatorKey.currentState.show())),
-            );
-            widget.scaffoldKey.currentState.showSnackBar(snackBar);
-            return null;
-          }
-        });
+        onRefresh: () => _onRefresh(context));
   }
 }
