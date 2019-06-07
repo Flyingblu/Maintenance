@@ -1,8 +1,10 @@
 import 'dart:io';
+
 import 'cookie_manager.dart';
 import 'package:html/parser.dart';
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
+import 'config.dart';
 
 class Question {
   String id;
@@ -25,11 +27,28 @@ class Question {
 }
 
 class Form {
+  Form();
+  Form.fromList(List<List<String>> data)
+      : roomUsage = data[0],
+        category = data[1],
+        recurringProblem = data[2],
+        blockID = data[3],
+        wingID = data[4];
+
   List<String> roomUsage;
   List<String> category;
   List<String> recurringProblem;
   List<String> blockID;
   List<String> wingID;
+  @override
+  String toString() {
+    return '''roomUsage: ${this.roomUsage}
+      category: ${this.category}
+      recurringProblem: ${this.recurringProblem}
+      blockID: ${this.blockID}
+      wingID: ${this.wingID}
+      ''';
+  }
 }
 
 class Maintenance {
@@ -48,20 +67,30 @@ class Maintenance {
       }
       return _myQuestion(myQPage);
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
   Future<Form> getForm() async {
-    try {
-      var dio = await _login();
-      var askPage = await dio.get('https://app.xmu.edu.my/Maintenance/Reader/Ask/Create');
-      if (askPage.data is DioError) {
-        throw askPage.data;
-      }
-    } catch (e) {
-      throw e;
+    var dio = await _login();
+    var askPage =
+        await dio.get('https://app.xmu.edu.my/Maintenance/Reader/Ask/Create');
+    if (askPage.data is DioError) {
+      throw askPage.data;
     }
+    var page = parse(askPage.data);
+    var data = [
+      '#RoomUsage',
+      '#Category',
+      '#RecurringProblem',
+      '#Block',
+      '#Wing'
+    ].map((d) => page
+        .querySelector(d)
+        .querySelectorAll('option')
+        .map((e) => e.text)
+        .toList()).toList();
+    return Form.fromList(data);
   }
 
   Future<Dio> _login() async {
@@ -90,7 +119,7 @@ class Maintenance {
               followRedirects: true));
     } on DioError catch (e) {
       if (e.response == null || e.response.statusCode != 302) {
-        throw e;
+        rethrow;
       }
     }
     return dio;
@@ -152,4 +181,9 @@ class Maintenance {
     }
     return qList;
   }
+}
+
+void main(List<String> args) async {
+  var maintenance = Maintenance(campus_id, passwd);
+  print(await maintenance.getForm());
 }
