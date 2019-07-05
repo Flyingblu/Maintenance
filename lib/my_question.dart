@@ -54,6 +54,10 @@ class Form {
 class Maintenance {
   final String _campusID;
   final String _passwd;
+  String _name;
+  String _email;
+  String _formToken;
+  String _gender;
 
   Maintenance(this._campusID, this._passwd);
 
@@ -90,7 +94,13 @@ class Maintenance {
         .querySelectorAll('option')
         .map((e) => e.text)
         .toList()).toList();
-    return Form.fromList(data);
+    
+    var form = Form.fromList(data);
+    this._gender = page.querySelector('[name="Gender"]').attributes['value'];
+    this._formToken = page.querySelector('[name="__RequestVerificationToken"]').attributes['value'];
+    this._name = page.querySelector('[name="Name"]').attributes['value'];
+    print('gender: ${this._gender}\ntoken: ${this._formToken}\nname: ${this._name}');
+    return form;
   }
 
   Future<Dio> _login() async {
@@ -125,13 +135,35 @@ class Maintenance {
     return dio;
   }
 
-  _formSender(Response<dynamic> formPage) {
-    var formData = parse(formPage.data);
-    var token = formData
-        .querySelector('[name="__RequestVerificationToken"]')
-        .attributes['value'];
-    var gender = formData.querySelector('[name="Gender"]').attributes['value'];
-    print(gender);
+  formSender(Map<String, String> formData) async {
+    var dio = new Dio();
+    try {
+      await dio.post('https://app.xmu.edu.my/Maintenance/Reader/Ask/Create',
+            data: {
+              '__RequestVerificationToken': this._formToken,
+              'Gender': this._gender,
+              'RoomUsage': formData['roomUsage'], 
+              'Category': formData['category'], 
+              'Block': formData['blockID'], 
+              'Wing': formData['wingID'], 
+              'RoomNo': formData['roomNo'],
+              'RecurringProblem': formData['recurringProblem'],
+              'Description': formData['description'], 
+              'CampusID': this._campusID,
+              'Name': this._name,
+              'Email': this._email,
+              'Telephone': formData['phone'], 
+              'Agree': true
+            },
+            options: Options(
+                contentType:
+                    ContentType.parse("application/x-www-form-urlencoded"),
+                followRedirects: true));
+    } on DioError catch (e) {
+      if (e.response == null || e.response.statusCode != 302) {
+        rethrow;
+      }
+    }
   }
 
   _removeSpace(String str) {
