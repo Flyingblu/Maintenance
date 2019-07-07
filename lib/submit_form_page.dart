@@ -82,7 +82,21 @@ class _SubmitFormPageState extends State<SubmitFormPage> {
           onChanged: (selectedVal) =>
               setState(() => filledForm['wingID'] = selectedVal),
         ),
-        
+        TextField(
+          decoration: InputDecoration(
+              border: InputBorder.none, hintText: 'Room Number'),
+        ),
+        TextField(
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            decoration: InputDecoration(
+                border: InputBorder.none, hintText: 'Description')),
+        TextField(
+          decoration: InputDecoration(
+              border: InputBorder.none, hintText: 'Telephone Number'),
+        ),
+        CheckboxListTile(title: Text('Recurring problem'),
+        value: false,)
       ],
     );
   }
