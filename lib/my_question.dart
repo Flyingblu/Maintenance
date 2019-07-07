@@ -95,11 +95,11 @@ class Maintenance {
         .map((e) => e.text)
         .toList()).toList();
     
+    data.forEach((list) => list.removeAt(0));
     var form = Form.fromList(data);
     this._gender = page.querySelector('[name="Gender"]').attributes['value'];
     this._formToken = page.querySelector('[name="__RequestVerificationToken"]').attributes['value'];
     this._name = page.querySelector('[name="Name"]').attributes['value'];
-    print('gender: ${this._gender}\ntoken: ${this._formToken}\nname: ${this._name}');
     return form;
   }
 

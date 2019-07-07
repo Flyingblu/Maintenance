@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'my_question_page.dart' as myQPage;
+import 'submit_form_page.dart';
 
 void main() => runApp(MyApp());
 
@@ -68,9 +69,7 @@ class _HomePageState extends State<HomePage>
         controller: controller,
         children: <Widget>[
           myQPage.MyQuestionsPage(),
-          Center(
-            child: Text("Hello world again!"),
-          ),
+          SubmitFormPage(),
           Center(
             child: Text("Hello world again again!"),
           )

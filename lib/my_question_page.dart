@@ -3,7 +3,6 @@ import 'config.dart';
 import 'my_question.dart';
 
 class MyQuestionsPage extends StatefulWidget {
-
   MyQuestionsPage();
 
   @override
@@ -57,22 +56,25 @@ class _MyQuestionsPageState extends State<MyQuestionsPage> {
   }
 
   _onRefresh(BuildContext context) {
-    var result = maintenance.getMyQuestion().then((data) {
-      setState(() {
-        _questions = data;
-      });
+    return maintenance.getMyQuestion().then((data) {
+      if (mounted) {
+        setState(() {
+          _questions = data;
+        });
+      }
     }, onError: (e) {
-      final snackBar = SnackBar(
-        content: Text(e.toString()),
-        duration: Duration(days: 1),
-        action: SnackBarAction(
-            label: 'Reload',
-            onPressed: () => WidgetsBinding.instance.addPostFrameCallback(
-                (_) => _refreshIndicatorKey.currentState.show())),
-      );
-      Scaffold.of(context).showSnackBar(snackBar);
+      if (mounted) {
+        final snackBar = SnackBar(
+          content: Text(e.toString()),
+          duration: Duration(days: 1),
+          action: SnackBarAction(
+              label: 'Reload',
+              onPressed: () => WidgetsBinding.instance.addPostFrameCallback(
+                  (_) => _refreshIndicatorKey.currentState.show())),
+        );
+        Scaffold.of(context).showSnackBar(snackBar);
+      }
     });
-    return result;
   }
 
   @override
