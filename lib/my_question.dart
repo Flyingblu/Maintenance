@@ -45,6 +45,9 @@ class Form {
   bool isrecurringProblem;
   String cblockID;
   String cwingID;
+  String roomNo;
+  String description;
+  String phoneNo;
   @override
   String toString() {
     return '''roomUsage: ${this.roomUsage}
@@ -94,18 +97,23 @@ class Maintenance {
       '#RecurringProblem',
       '#Block',
       '#Wing'
-    ].map((d) => page
-        .querySelector(d)
-        .querySelectorAll('option')
-        .map((e) => e.text)
-        .toList()).toList();
-    
+    ]
+        .map((d) => page
+            .querySelector(d)
+            .querySelectorAll('option')
+            .map((e) => e.text)
+            .toList())
+        .toList();
+
     data.forEach((list) => list.removeAt(0));
     var form = Form.fromList(data);
     form.isrecurringProblem = false;
     this._gender = page.querySelector('[name="Gender"]').attributes['value'];
-    this._formToken = page.querySelector('[name="__RequestVerificationToken"]').attributes['value'];
+    this._formToken = page
+        .querySelector('[name="__RequestVerificationToken"]')
+        .attributes['value'];
     this._name = page.querySelector('[name="Name"]').attributes['value'];
+    this._email = page.querySelector('[name="Email"]').attributes['value'];
     return form;
   }
 
@@ -141,30 +149,35 @@ class Maintenance {
     return dio;
   }
 
-  formSender(Map<String, String> formData) async {
+  Future<void> formSender(Form formData) async {
     var dio = new Dio();
     try {
-      await dio.post('https://app.xmu.edu.my/Maintenance/Reader/Ask/Create',
-            data: {
-              '__RequestVerificationToken': this._formToken,
-              'Gender': this._gender,
-              'RoomUsage': formData['roomUsage'], 
-              'Category': formData['category'], 
-              'Block': formData['blockID'], 
-              'Wing': formData['wingID'], 
-              'RoomNo': formData['roomNo'],
-              'RecurringProblem': formData['recurringProblem'],
-              'Description': formData['description'], 
-              'CampusID': this._campusID,
-              'Name': this._name,
-              'Email': this._email,
-              'Telephone': formData['phone'], 
-              'Agree': true
-            },
-            options: Options(
-                contentType:
-                    ContentType.parse("application/x-www-form-urlencoded"),
-                followRedirects: true));
+      var data = {
+            '__RequestVerificationToken': this._formToken,
+            'Gender': this._gender,
+            'RoomUsage': formData.croomUsage,
+            'Category': formData.ccategory,
+            'Block': formData.cblockID,
+            'Wing': formData.cwingID,
+            'RoomNo': formData.roomNo,
+            'RecurringProblem': formData.isrecurringProblem
+                ? formData.recurringProblem[0]
+                : formData.recurringProblem[1],
+            'Description': formData.description,
+            'CampusID': this._campusID,
+            'Name': this._name,
+            'Email': this._email,
+            'Telephone': formData.phoneNo,
+            'Agree': 'true'
+          };
+      var response = await dio.post('https://app.xmu.edu.my/Maintenance/Reader/Ask/Create',
+          data: data,
+          options: Options(
+              contentType:
+                  ContentType.parse("application/x-www-form-urlencoded"),
+              followRedirects: true));
+      print(data);
+      print(response.toString());
     } on DioError catch (e) {
       if (e.response == null || e.response.statusCode != 302) {
         rethrow;

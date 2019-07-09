@@ -15,12 +15,28 @@ class _SubmitFormPageState extends State<SubmitFormPage> {
   var maintenance = myQuestion.Maintenance(campus_id, passwd);
   final _formKey = GlobalKey<FormState>();
 
-  _SubmitFormPageState() {
+  _getForm() {
     maintenance.getForm().then((form) {
       if (mounted) {
         setState(() => formData = form);
       }
+    }).catchError((error) {
+      if (mounted) {
+        final snackBar = SnackBar(
+          content: Text(error.toString()),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () => _getForm(),
+          ),
+          duration: Duration(days: 1),
+        );
+        Scaffold.of(context).showSnackBar(snackBar);
+      }
     });
+  }
+
+  _SubmitFormPageState() {
+    _getForm();
   }
 
   @override
@@ -51,32 +67,34 @@ class _SubmitFormPageState extends State<SubmitFormPage> {
           padding: const EdgeInsets.all(8.0),
           children: <Widget>[
             FormField<String>(
-              builder: (formFieldState) => Column(children: [
-                DropdownButton(
-                  value: formFieldState.value,
-                  items: roomUsageItem,
-                  hint: Text(
-                    'Room Usage',
-                  ),
-                  onChanged: (selectedVal) {
-                    formFieldState.didChange(selectedVal);
-                    setState(() => formFieldState.validate());
-                  },
-                ),
-                formFieldState.hasError
-                    ? Text(
-                        formFieldState.errorText,
-                        style: TextStyle(color: Colors.red[700], fontSize: 12),
-                      )
-                    : Container()
-              ]),
-              validator: (selectedValue) {
-                if (selectedValue == null)
-                  return "Please choose an option";
-                else
-                  return null;
-              },
-            ),
+                builder: (formFieldState) => Column(children: [
+                      DropdownButton(
+                        value: formFieldState.value,
+                        items: roomUsageItem,
+                        hint: Text(
+                          'Room Usage',
+                        ),
+                        onChanged: (selectedVal) {
+                          formFieldState.didChange(selectedVal);
+                          setState(() => formFieldState.validate());
+                        },
+                      ),
+                      formFieldState.hasError
+                          ? Text(
+                              formFieldState.errorText,
+                              style: TextStyle(
+                                  color: Colors.red[700], fontSize: 12),
+                            )
+                          : Container()
+                    ]),
+                validator: (selectedValue) {
+                  if (selectedValue == null)
+                    return "Please choose an option";
+                  else
+                    return null;
+                },
+                onSaved: (selectedValue) =>
+                    formData.croomUsage = selectedValue),
             FormField(
               builder: (formFieldState) => Column(children: [
                 DropdownButton(
@@ -103,6 +121,7 @@ class _SubmitFormPageState extends State<SubmitFormPage> {
                 } else
                   return null;
               },
+              onSaved: (selectedValue) => formData.ccategory = selectedValue,
             ),
             Row(
               children: <Widget>[
@@ -133,6 +152,7 @@ class _SubmitFormPageState extends State<SubmitFormPage> {
                     else
                       return null;
                   },
+                  onSaved: (selectedValue) => formData.cblockID = selectedValue,
                 ),
                 FormField(
                   builder: (formFieldState) => Column(children: [
@@ -161,10 +181,12 @@ class _SubmitFormPageState extends State<SubmitFormPage> {
                     else
                       return null;
                   },
+                  onSaved: (selectedValue) => formData.cwingID = selectedValue,
                 )
               ],
             ),
             TextFormField(
+              keyboardType: TextInputType.text,
               decoration: InputDecoration(
                   border: InputBorder.none, hintText: 'Room Number'),
               validator: (currentValue) {
@@ -173,6 +195,7 @@ class _SubmitFormPageState extends State<SubmitFormPage> {
                 else
                   return null;
               },
+              onSaved: (currentValue) => formData.roomNo = currentValue,
             ),
             TextFormField(
               keyboardType: TextInputType.multiline,
@@ -188,24 +211,46 @@ class _SubmitFormPageState extends State<SubmitFormPage> {
                 else
                   return null;
               },
+              onSaved: (currentValue) => formData.description = currentValue,
             ),
-            TextField(
+            TextFormField(
               decoration: InputDecoration(
-                  border: InputBorder.none, hintText: 'Telephone Number'),
+                  border: InputBorder.none, hintText: 'Phone Number'),
+              keyboardType: TextInputType.number,
+              validator: (currentValue) {
+                if (currentValue.isEmpty)
+                  return 'Please fill in phone number';
+                else
+                  return null;
+              },
+              onSaved: (currentValue) => formData.phoneNo = currentValue,
             ),
             CheckboxListTile(
               title: Text('Recurring problem'),
               value: formData.isrecurringProblem,
-              onChanged: (checked) {
-                setState(() {
-                  formData.isrecurringProblem = checked;
-                });
-                print(formData.isrecurringProblem);
-              },
+              onChanged: (checked) =>
+                  setState(() => formData.isrecurringProblem = checked),
             ),
             RaisedButton(
               onPressed: () {
-                _formKey.currentState.validate();
+                if (_formKey.currentState.validate()) {
+                  _formKey.currentState.save();
+                  maintenance.formSender(formData).then((r) {
+                    if (mounted) {
+                      final snackBar = SnackBar(
+                        content: Text('Form successfully submitted! '),
+                      );
+                      Scaffold.of(context).showSnackBar(snackBar);
+                    }
+                  }).catchError((error) {
+                    if (mounted) {
+                      final snackBar = SnackBar(
+                        content: Text(error.toString()),
+                      );
+                      Scaffold.of(context).showSnackBar(snackBar);
+                    }
+                  });
+                }
               },
               child: Text('Submit Form'),
             )
