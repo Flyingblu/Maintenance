@@ -40,6 +40,11 @@ class Form {
   List<String> recurringProblem;
   List<String> blockID;
   List<String> wingID;
+  String croomUsage;
+  String ccategory;
+  bool isrecurringProblem;
+  String cblockID;
+  String cwingID;
   @override
   String toString() {
     return '''roomUsage: ${this.roomUsage}
@@ -97,6 +102,7 @@ class Maintenance {
     
     data.forEach((list) => list.removeAt(0));
     var form = Form.fromList(data);
+    form.isrecurringProblem = false;
     this._gender = page.querySelector('[name="Gender"]').attributes['value'];
     this._formToken = page.querySelector('[name="__RequestVerificationToken"]').attributes['value'];
     this._name = page.querySelector('[name="Name"]').attributes['value'];
