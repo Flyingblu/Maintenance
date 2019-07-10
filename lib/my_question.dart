@@ -1,3 +1,4 @@
+import 'dart:core';
 import 'dart:io';
 
 import 'cookie_manager.dart';
@@ -66,14 +67,17 @@ class Maintenance {
   String _email;
   String _formToken;
   String _gender;
+  Dio _dioClient;
 
   Maintenance(this._campusID, this._passwd);
 
   Future<List<Question>> getMyQuestion() async {
     try {
-      var dio = await _login();
+      if (_dioClient == null) {
+        await login();
+      }
       var myQPage =
-          await dio.get('https://app.xmu.edu.my/Maintenance/Reader/Ask');
+          await _dioClient.get('https://app.xmu.edu.my/Maintenance/Reader/Ask');
       if (myQPage.data is DioError) {
         throw myQPage.data;
       }
@@ -84,9 +88,11 @@ class Maintenance {
   }
 
   Future<Form> getForm() async {
-    var dio = await _login();
+    if (_dioClient == null) {
+      await login();
+    }
     var askPage =
-        await dio.get('https://app.xmu.edu.my/Maintenance/Reader/Ask/Create');
+        await _dioClient.get('https://app.xmu.edu.my/Maintenance/Reader/Ask/Create');
     if (askPage.data is DioError) {
       throw askPage.data;
     }
@@ -117,12 +123,12 @@ class Maintenance {
     return form;
   }
 
-  Future<Dio> _login() async {
-    var dio = new Dio();
-    dio.interceptors.add(NBCookieManager(CookieJar()));
+  Future<void> login() async {
+    _dioClient = Dio();
+    _dioClient.interceptors.add(NBCookieManager(CookieJar()));
     try {
       var loginPage =
-          await dio.get('https://app.xmu.edu.my/Maintenance/Account/Login');
+          await _dioClient.get('https://app.xmu.edu.my/Maintenance/Account/Login');
       if (loginPage.data is DioError) {
         throw loginPage.data;
       }
@@ -131,7 +137,7 @@ class Maintenance {
       var token = loginData
           .querySelector('[name="__RequestVerificationToken"]')
           .attributes['value'];
-      await dio.post('https://app.xmu.edu.my/Maintenance/Account/Login',
+      await _dioClient.post('https://app.xmu.edu.my/Maintenance/Account/Login',
           data: {
             "__RequestVerificationToken": token,
             "CampusID": this._campusID,
@@ -146,11 +152,12 @@ class Maintenance {
         rethrow;
       }
     }
-    return dio;
   }
 
   Future<void> formSender(Form formData) async {
-    var dio = new Dio();
+    if (_dioClient == null) {
+      await login();
+    }
     try {
       var data = {
             '__RequestVerificationToken': this._formToken,
@@ -170,14 +177,12 @@ class Maintenance {
             'Telephone': formData.phoneNo,
             'Agree': 'true'
           };
-      var response = await dio.post('https://app.xmu.edu.my/Maintenance/Reader/Ask/Create',
+      await _dioClient.post('https://app.xmu.edu.my/Maintenance/Reader/Ask/Create',
           data: data,
           options: Options(
               contentType:
                   ContentType.parse("application/x-www-form-urlencoded"),
               followRedirects: true));
-      print(data);
-      print(response.toString());
     } on DioError catch (e) {
       if (e.response == null || e.response.statusCode != 302) {
         rethrow;
