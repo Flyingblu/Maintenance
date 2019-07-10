@@ -1,7 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'my_question_page.dart' as myQPage;
 import 'submit_form_page.dart';
+import 'faq_page.dart';
+import 'config.dart';
 
 void main() => runApp(MyApp());
 
@@ -68,11 +69,9 @@ class _HomePageState extends State<HomePage>
       body: new TabBarView(
         controller: controller,
         children: <Widget>[
-          myQPage.MyQuestionsPage(),
-          SubmitFormPage(),
-          Center(
-            child: Text("Hello world again again!"),
-          )
+          myQPage.MyQuestionsPage(campus_id, passwd),
+          SubmitFormPage(campus_id, passwd),
+          FaqPage(campus_id, passwd),
         ],
       ),
     );

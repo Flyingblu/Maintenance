@@ -68,12 +68,13 @@ class Maintenance {
   String _formToken;
   String _gender;
   Dio _dioClient;
+  bool _isLoggedin = false;
 
   Maintenance(this._campusID, this._passwd);
 
   Future<List<Question>> getMyQuestion() async {
     try {
-      if (_dioClient == null) {
+      if (!_isLoggedin) {
         await login();
       }
       var myQPage =
@@ -81,14 +82,14 @@ class Maintenance {
       if (myQPage.data is DioError) {
         throw myQPage.data;
       }
-      return _myQuestion(myQPage);
+      return _parseMyQuestion(myQPage);
     } catch (e) {
       rethrow;
     }
   }
 
   Future<Form> getForm() async {
-    if (_dioClient == null) {
+    if (!_isLoggedin) {
       await login();
     }
     var askPage =
@@ -147,6 +148,7 @@ class Maintenance {
               contentType:
                   ContentType.parse("application/x-www-form-urlencoded"),
               followRedirects: true));
+      _isLoggedin = true;
     } on DioError catch (e) {
       if (e.response == null || e.response.statusCode != 302) {
         rethrow;
@@ -155,7 +157,7 @@ class Maintenance {
   }
 
   Future<void> formSender(Form formData) async {
-    if (_dioClient == null) {
+    if (!_isLoggedin) {
       await login();
     }
     try {
@@ -190,6 +192,17 @@ class Maintenance {
     }
   }
 
+  Future<List<Question>> getFaq({int pageNum = 1}) async {
+    if (!_isLoggedin) {
+      login();
+    }
+    var faqPage = await _dioClient.get('https://app.xmu.edu.my/Maintenance/?p=$pageNum');
+    if (faqPage.data is DioError) {
+        throw faqPage.data;
+    }
+    return _parseFaqQuestion(faqPage);
+  }
+
   _removeSpace(String str) {
     int start, end;
     for (int i = 0; i < str.length; ++i) {
@@ -210,9 +223,9 @@ class Maintenance {
     return str.substring(start, end);
   }
 
-  List<Question> _myQuestion(Response<dynamic> qPage) {
+  List<Question> _parseMyQuestion(Response<dynamic> qPage) {
     var myQData =
-        parse(qPage.data).querySelector('.table-QA').querySelectorAll('td');
+        parse(qPage.data).querySelector('.table').querySelectorAll('td');
     var qList = List<Question>(myQData.length ~/ 2);
     int index;
     List<String> title;
@@ -230,6 +243,30 @@ class Maintenance {
         index = (i - 1) ~/ 2;
         var ans = List();
         myQData[i].children.forEach((e) {
+          ans.add(e.text);
+        });
+        qList[index].answer = ans.join('\n');
+      }
+    }
+    return qList;
+  }
+
+  List<Question> _parseFaqQuestion(Response<dynamic> qPage) {
+    var myQData =
+        parse(qPage.data).querySelector('.table').querySelectorAll('td');
+    var qList = List<Question>(myQData.length ~/ 2);
+    int index;
+    for (int i = 0; i < myQData.length; ++i) {
+      if (i % 2 == 0) {
+        index = i ~/ 2;
+        qList[index] = new Question();
+        qList[index].id = _removeSpace(myQData[i].nodes[0].text);
+        qList[index].title = _removeSpace(myQData[i].nodes[1].text);
+        qList[index].time = _removeSpace(myQData[i].nodes[2].text);
+      } else {
+        index = (i - 1) ~/ 2;
+        var ans = List();
+        myQData[i].children[0].children.forEach((e) {
           ans.add(e.text);
         });
         qList[index].answer = ans.join('\n');

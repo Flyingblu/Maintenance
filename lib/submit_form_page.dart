@@ -1,22 +1,27 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'config.dart';
 import 'my_question.dart' as myQuestion;
 
 class SubmitFormPage extends StatefulWidget {
-  SubmitFormPage();
+  String _campusID, _passwd;
+  SubmitFormPage(this._campusID, this._passwd);
 
   @override
-  _SubmitFormPageState createState() => _SubmitFormPageState();
+  _SubmitFormPageState createState() => _SubmitFormPageState(this._campusID, this._passwd);
 }
 
 class _SubmitFormPageState extends State<SubmitFormPage> {
   myQuestion.Form formData;
-  var maintenance = myQuestion.Maintenance(campus_id, passwd);
+  String _campusID, _passwd;
+  var _maintenance;
   final _formKey = GlobalKey<FormState>();
 
+  _SubmitFormPageState(this._campusID, this._passwd) {
+    _maintenance = myQuestion.Maintenance(_campusID, _passwd);
+    _getForm();
+  }
+
   _getForm() {
-    maintenance.getForm().then((form) {
+    _maintenance.getForm().then((form) {
       if (mounted) {
         setState(() => formData = form);
       }
@@ -33,10 +38,6 @@ class _SubmitFormPageState extends State<SubmitFormPage> {
         Scaffold.of(context).showSnackBar(snackBar);
       }
     });
-  }
-
-  _SubmitFormPageState() {
-    _getForm();
   }
 
   @override
@@ -235,7 +236,7 @@ class _SubmitFormPageState extends State<SubmitFormPage> {
               onPressed: () {
                 if (_formKey.currentState.validate()) {
                   _formKey.currentState.save();
-                  maintenance.formSender(formData).then((r) {
+                  _maintenance.formSender(formData).then((r) {
                     if (mounted) {
                       final snackBar = SnackBar(
                         content: Text('Form successfully submitted! '),

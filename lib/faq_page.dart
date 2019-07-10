@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'my_question.dart';
 
-class MyQuestionsPage extends StatefulWidget {
+class FaqPage extends StatefulWidget {
   String _campusID, _passwd;
-  MyQuestionsPage(this._campusID, this._passwd);
+  FaqPage(this._campusID, this._passwd);
 
   @override
-  _MyQuestionsPageState createState() => _MyQuestionsPageState(this._campusID, this._passwd);
+  _FaqPageState createState() => _FaqPageState(this._campusID, this._passwd);
 }
 
-class _MyQuestionsPageState extends State<MyQuestionsPage> {
+class _FaqPageState extends State<FaqPage> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
   List<Question> _questions;
   String _campusID, _passwd;
   var _maintenance;
 
-  _MyQuestionsPageState(this._campusID, this._passwd) {
+  _FaqPageState(this._campusID, this._passwd) {
      _maintenance = Maintenance(_campusID, _passwd);
   }
 
@@ -61,7 +61,7 @@ class _MyQuestionsPageState extends State<MyQuestionsPage> {
   }
 
   _onRefresh(BuildContext context) {
-    return _maintenance.getMyQuestion().then((data) {
+    return _maintenance.getFaq().then((data) {
       if (mounted) {
         setState(() {
           _questions = data;
