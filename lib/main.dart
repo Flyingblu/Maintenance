@@ -30,13 +30,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-      
   TabController controller;
 
   @override
   void initState() {
     super.initState();
-    controller = TabController(length: 3, vsync: this);
+    controller = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -51,17 +50,25 @@ class _HomePageState extends State<HomePage>
       appBar: AppBar(
         title: Text('Maintenance'),
         backgroundColor: Colors.deepOrange,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.question_answer),
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => FaqPage(campus_id, passwd)));
+            },
+          )
+        ],
         bottom: TabBar(
           tabs: <Tab>[
             Tab(
-              text: 'My question',
+              text: 'New form',
             ),
             Tab(
-              text: 'New complaint',
+              text: 'My complaint',
             ),
-            Tab(
-              text: 'Q&A',
-            )
           ],
           controller: controller,
         ),
@@ -69,9 +76,8 @@ class _HomePageState extends State<HomePage>
       body: new TabBarView(
         controller: controller,
         children: <Widget>[
-          myQPage.MyQuestionsPage(campus_id, passwd),
           SubmitFormPage(campus_id, passwd),
-          FaqPage(campus_id, passwd),
+          myQPage.MyQuestionsPage(campus_id, passwd),
         ],
       ),
     );

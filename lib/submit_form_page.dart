@@ -183,7 +183,7 @@ class _SubmitFormPageState extends State<SubmitFormPage> {
                             ],
                           ),
                           _blockKey.currentState == null
-                              ? Text('First time')
+                              ? Container()
                               : _blockKey.currentState.hasError
                                   ? Text(
                                       _blockKey.currentState.errorText,

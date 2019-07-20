@@ -17,7 +17,7 @@ class _FaqPageState extends State<FaqPage> {
   var _maintenance;
 
   _FaqPageState(this._campusID, this._passwd) {
-     _maintenance = Maintenance(_campusID, _passwd);
+    _maintenance = Maintenance(_campusID, _passwd);
   }
 
   _showDetail(Question q, BuildContext context) {
@@ -113,14 +113,20 @@ class _FaqPageState extends State<FaqPage> {
         ));
       });
     }
-    return RefreshIndicator(
-        key: _refreshIndicatorKey,
-        child: Padding(
-          padding: EdgeInsets.only(left: 4, right: 4, top: 10),
-          child: ListView(
-            children: cards,
-          ),
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('FAQ'),
+          backgroundColor: Colors.deepOrange,
         ),
-        onRefresh: () => _onRefresh(context));
+        body: RefreshIndicator(
+          key: _refreshIndicatorKey,
+          child: Padding(
+            padding: EdgeInsets.only(left: 4, right: 4, top: 10),
+            child: ListView(
+              children: cards,
+            ),
+          ),
+          onRefresh: () => _onRefresh(context),
+        ));
   }
 }
